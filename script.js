@@ -9,7 +9,6 @@ const controls = {
   radius: document.getElementById("radius"),
   spread: document.getElementById("spread"),
   chaos: document.getElementById("chaos"),
-  noise: document.getElementById("noise"),
   speed: document.getElementById("speed"),
   pulse: document.getElementById("pulse"),
   drift: document.getElementById("drift"),
@@ -24,7 +23,6 @@ const outputs = {
   radius: document.getElementById("radiusOut"),
   spread: document.getElementById("spreadOut"),
   chaos: document.getElementById("chaosOut"),
-  noise: document.getElementById("noiseOut"),
   speed: document.getElementById("speedOut"),
   pulse: document.getElementById("pulseOut"),
   drift: document.getElementById("driftOut"),
@@ -50,7 +48,6 @@ function settings() {
     radius: numberValue("radius"),
     spread: numberValue("spread"),
     chaos: numberValue("chaos"),
-    noise: numberValue("noise"),
     speed: numberValue("speed"),
     pulse: numberValue("pulse"),
     drift: numberValue("drift"),
@@ -71,6 +68,7 @@ function seeded(seed) {
 
 function buildParticles() {
   const cfg = settings();
+  const noiseAmount = 0.9;
   canvas.width = cfg.width;
   canvas.height = cfg.height;
   document.getElementById("canvasSize").textContent = `${cfg.width} x ${cfg.height}`;
@@ -129,8 +127,8 @@ function buildParticles() {
     }
   }
 
-  if (particles.length > 0 && cfg.noise > 0) {
-    const noiseCount = Math.round(particles.length * cfg.noise);
+  if (particles.length > 0 && noiseAmount > 0) {
+    const noiseCount = Math.round(particles.length * noiseAmount);
     const padX = cfg.spread * (1.8 + cfg.chaos);
     const padY = cfg.spread * (1.2 + cfg.chaos * 0.8);
     const minX = Math.max(0, maskBounds.minX - padX);
@@ -194,7 +192,6 @@ function updateOutputs() {
   outputs.radius.textContent = `${numberValue("radius").toFixed(1)} px`;
   outputs.spread.textContent = `${numberValue("spread").toFixed(1)} px`;
   outputs.chaos.textContent = numberValue("chaos").toFixed(2);
-  outputs.noise.textContent = numberValue("noise").toFixed(2);
   outputs.speed.textContent = numberValue("speed").toFixed(2);
   outputs.pulse.textContent = numberValue("pulse").toFixed(2);
   outputs.drift.textContent = `${numberValue("drift").toFixed(1)} px`;
@@ -221,7 +218,6 @@ struct HiddenAmountParticles: View {
         radius: ${cfg.radius.toFixed(1)},
         spread: ${cfg.spread.toFixed(1)},
         chaos: ${cfg.chaos.toFixed(2)},
-        noise: ${cfg.noise.toFixed(2)},
         seed: ${cfg.seed}
     )
 
@@ -249,7 +245,8 @@ struct HiddenAmountParticles: View {
 struct ParticleModel {
     let x: Double, y: Double, phase: Double, angle: Double, orbit: Double, alpha: Double, size: Double
 
-    static func generate(text: String, canvas: CGSize, density: Double, radius: Double, spread: Double, chaos: Double, noise: Double, seed: UInt32) -> [ParticleModel] {
+    static func generate(text: String, canvas: CGSize, density: Double, radius: Double, spread: Double, chaos: Double, seed: UInt32) -> [ParticleModel] {
+        let noiseAmount = 0.9
         let scale = UIScreen.main.scale
         let format = UIGraphicsImageRendererFormat()
         format.scale = scale
@@ -310,8 +307,8 @@ struct ParticleModel {
                 }
             }
         }
-        if !result.isEmpty && noise > 0 {
-            let count = Int(Double(result.count) * noise)
+        if !result.isEmpty && noiseAmount > 0 {
+            let count = Int(Double(result.count) * noiseAmount)
             let minX = max(0, bounds.origin.x - spread * scale * (1.8 + chaos))
             let maxX = min(Double(width), bounds.size.width + spread * scale * (1.8 + chaos))
             let minY = max(0, bounds.origin.y - spread * scale * (1.2 + chaos * 0.8))
@@ -383,7 +380,6 @@ fun HiddenAmountParticles(modifier: Modifier = Modifier) {
             radius = ${cfg.radius.toFixed(1)}f,
             spread = ${cfg.spread.toFixed(1)}f,
             chaos = ${cfg.chaos.toFixed(2)}f,
-            noise = ${cfg.noise.toFixed(2)}f,
             seed = ${cfg.seed}
         )
     }
@@ -418,7 +414,8 @@ data class ParticleModel(
     val size: Float
 ) {
     companion object {
-        fun generate(text: String, canvas: Size, density: Float, radius: Float, spread: Float, chaos: Float, noise: Float, seed: Int): List<ParticleModel> {
+        fun generate(text: String, canvas: Size, density: Float, radius: Float, spread: Float, chaos: Float, seed: Int): List<ParticleModel> {
+            val noiseAmount = 0.9f
             val width = canvas.width.toInt().coerceAtLeast(1)
             val height = canvas.height.toInt().coerceAtLeast(1)
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -477,8 +474,8 @@ data class ParticleModel(
                 }
                 y += step
             }
-            if (result.isNotEmpty() && noise > 0f) {
-                val count = (result.size * noise).toInt()
+            if (result.isNotEmpty() && noiseAmount > 0f) {
+                val count = (result.size * noiseAmount).toInt()
                 val cloudMinX = max(0f, minX - spread * (1.8f + chaos))
                 val cloudMaxX = min(width.toFloat(), maxX + spread * (1.8f + chaos))
                 val cloudMinY = max(0f, minY - spread * (1.2f + chaos * 0.8f))
