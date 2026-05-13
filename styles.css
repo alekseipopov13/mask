@@ -217,11 +217,6 @@ textarea {
   display: contents;
 }
 
-.secondary-action {
-  min-height: 34px;
-  color: var(--muted);
-}
-
 .copy-status {
   min-height: 18px;
   color: var(--accent);
@@ -241,6 +236,48 @@ textarea {
 .field-note strong {
   color: var(--text);
   font-weight: 600;
+}
+
+.seed-control {
+  position: relative;
+  display: block;
+  color: inherit;
+}
+
+.seed-control input {
+  padding-right: 48px;
+}
+
+.copy-seed-button {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  width: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0;
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.copy-seed-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.seed-control:hover .copy-seed-button,
+.seed-control:focus-within .copy-seed-button {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 #maskText {

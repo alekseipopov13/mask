@@ -103,9 +103,16 @@
           <div class="grid">
             <label class="field">
               <span>Seed</span>
-              <input id="seed" type="number" value="2481" />
+              <span class="seed-control">
+                <input id="seed" type="number" value="2481" />
+                <button id="copySeedBtn" class="copy-seed-button" type="button" aria-label="Скопировать ссылку с seed" title="Скопировать ссылку">
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M8 8h8v10H8z"></path>
+                    <path d="M5 15V5h10"></path>
+                  </svg>
+                </button>
+              </span>
               <small class="field-note neutral">Текущий seed: <strong id="currentSeedLabel">2481</strong></small>
-              <button id="copySeedBtn" class="secondary-action" type="button">Скопировать ссылку</button>
               <small id="seedStatus" class="field-note" aria-live="polite"></small>
             </label>
             <label class="field">
