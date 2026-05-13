@@ -37,12 +37,6 @@ const state = {
   fps: 60,
 };
 
-const presets = {
-  bank: { density: 1.45, radius: 2.1, spread: 15, chaos: 0.72, noise: 0.9, speed: 0.75, pulse: 0.36, drift: 7.5, blur: 1 },
-  dense: { density: 2.25, radius: 1.7, spread: 11, chaos: 0.62, noise: 0.55, speed: 0.55, pulse: 0.22, drift: 5, blur: 0.5 },
-  soft: { density: 1.05, radius: 2.8, spread: 23, chaos: 0.86, noise: 1.25, speed: 1.05, pulse: 0.5, drift: 11, blur: 1.5 },
-};
-
 function numberValue(id) {
   return Number(controls[id].value);
 }
@@ -532,16 +526,6 @@ for (const input of Object.values(controls)) {
     buildParticles();
   });
 }
-
-document.querySelectorAll("[data-preset]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const preset = presets[button.dataset.preset];
-    Object.entries(preset).forEach(([key, value]) => {
-      controls[key].value = value;
-    });
-    buildParticles();
-  });
-});
 
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
