@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Редактор скрытых сумм</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="stage">
+        <div class="topbar">
+          <div>
+            <h1>Редактор скрытых сумм</h1>
+            <p>Настройка анимированных частиц для iOS и Android.</p>
+          </div>
+          <div class="actions">
+            <button id="pauseBtn" type="button" title="Пауза">Пауза</button>
+            <button id="randomizeBtn" type="button" title="Новый рисунок">Новый seed</button>
+          </div>
+        </div>
+
+        <div class="preview-shell">
+          <canvas id="particleCanvas" width="960" height="480" aria-label="Превью частиц"></canvas>
+        </div>
+
+        <div class="preview-meta">
+          <span id="particleCount">0 частиц</span>
+          <span id="fpsCounter">60 FPS</span>
+          <span id="canvasSize">960 x 480</span>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab active" type="button" data-tab="controls">Параметры</button>
+          <button class="tab" type="button" data-tab="export">Код</button>
+        </div>
+
+        <section id="controlsTab" class="tab-panel active">
+          <label class="field">
+            <span>Текст-маска</span>
+            <textarea id="maskText" rows="3">•••••• ₽
+•••• •••• ••••</textarea>
+          </label>
+
+          <div class="preset-row">
+            <button type="button" data-preset="bank">Банк</button>
+            <button type="button" data-preset="dense">Плотно</button>
+            <button type="button" data-preset="soft">Мягко</button>
+          </div>
+
+          <div class="grid">
+            <label class="field">
+              <span>Ширина</span>
+              <input id="width" type="number" min="280" max="1600" value="960" />
+            </label>
+            <label class="field">
+              <span>Высота</span>
+              <input id="height" type="number" min="160" max="900" value="480" />
+            </label>
+          </div>
+
+          <label class="field range">
+            <span>Плотность <output id="densityOut"></output></span>
+            <input id="density" type="range" min="0.35" max="3.2" step="0.05" value="1.35" />
+          </label>
+
+          <label class="field range">
+            <span>Размер частиц <output id="radiusOut"></output></span>
+            <input id="radius" type="range" min="0.8" max="4.2" step="0.1" value="2.1" />
+          </label>
+
+          <label class="field range">
+            <span>Разброс <output id="spreadOut"></output></span>
+            <input id="spread" type="range" min="0" max="18" step="0.5" value="7" />
+          </label>
+
+          <label class="field range">
+            <span>Скорость <output id="speedOut"></output></span>
+            <input id="speed" type="range" min="0" max="2.4" step="0.05" value="0.75" />
+          </label>
+
+          <label class="field range">
+            <span>Пульсация <output id="pulseOut"></output></span>
+            <input id="pulse" type="range" min="0" max="1" step="0.02" value="0.36" />
+          </label>
+
+          <label class="field range">
+            <span>Дрейф <output id="driftOut"></output></span>
+            <input id="drift" type="range" min="0" max="24" step="0.5" value="5.5" />
+          </label>
+
+          <div class="grid">
+            <label class="field">
+              <span>Частицы</span>
+              <input id="particleColor" type="color" value="#f0f2ee" />
+            </label>
+            <label class="field">
+              <span>Фон</span>
+              <input id="backgroundColor" type="color" value="#1f1e26" />
+            </label>
+          </div>
+
+          <div class="grid">
+            <label class="field">
+              <span>Seed</span>
+              <input id="seed" type="number" value="2481" />
+            </label>
+            <label class="field">
+              <span>Мягкость</span>
+              <input id="blur" type="number" min="0" max="8" step="0.5" value="1" />
+            </label>
+          </div>
+        </section>
+
+        <section id="exportTab" class="tab-panel">
+          <div class="export-actions">
+            <button id="copyIosBtn" type="button">Скопировать iOS</button>
+            <button id="copyAndroidBtn" type="button">Скопировать Android</button>
+          </div>
+          <p id="copyStatus" class="copy-status" aria-live="polite"></p>
+          <label class="field">
+            <span>SwiftUI Canvas</span>
+            <textarea id="iosCode" class="code" spellcheck="false"></textarea>
+          </label>
+          <label class="field">
+            <span>Jetpack Compose Canvas</span>
+            <textarea id="androidCode" class="code" spellcheck="false"></textarea>
+          </label>
+        </section>
+      </aside>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
