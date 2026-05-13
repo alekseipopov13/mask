@@ -499,7 +499,7 @@ async function copyFrom(id) {
   }
 }
 
-for (const input of Object.values(controls)) {
+for (const input of Object.values(controls).filter(Boolean)) {
   input.addEventListener("input", () => {
     buildParticles();
   });
