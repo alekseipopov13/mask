@@ -93,6 +93,26 @@ p {
   color: var(--accent);
 }
 
+.secondary-action {
+  min-height: 32px;
+  color: var(--muted);
+}
+
+.field-note {
+  min-height: 16px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.field-note.neutral {
+  color: var(--muted);
+}
+
+.field-note strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
 .preview-shell {
   display: grid;
   place-items: center;

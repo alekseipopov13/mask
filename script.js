@@ -28,6 +28,9 @@ const outputs = {
   drift: document.getElementById("driftOut"),
 };
 
+const seedStatus = document.getElementById("seedStatus");
+const currentSeedLabel = document.getElementById("currentSeedLabel");
+
 const state = {
   particles: [],
   running: true,
@@ -57,6 +60,37 @@ function applySeedParameters(seed) {
   setNumberControl("pulse", seededRange(random, 0.16, 0.62), 2);
   setNumberControl("drift", seededRange(random, 3.5, 14), 1);
   setNumberControl("blur", seededRange(random, 0.4, 2.2), 1);
+}
+
+function currentSeed() {
+  return Math.max(0, Math.round(numberValue("seed")) || 0);
+}
+
+function readSeedFromUrl() {
+  const value = new URL(window.location.href).searchParams.get("seed");
+  const seed = Number(value);
+  return Number.isFinite(seed) ? Math.max(0, Math.round(seed)) : null;
+}
+
+function seedUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("seed", String(currentSeed()));
+  return url.toString();
+}
+
+function syncSeedUrl() {
+  currentSeedLabel.textContent = String(currentSeed());
+  window.history.replaceState(null, "", seedUrl());
+}
+
+async function copySeedLink() {
+  const url = seedUrl();
+  try {
+    await navigator.clipboard.writeText(url);
+    seedStatus.textContent = "Ссылка с seed скопирована.";
+  } catch {
+    seedStatus.textContent = url;
+  }
 }
 
 function settings() {
@@ -541,7 +575,9 @@ async function copyFrom(id) {
 for (const [id, input] of Object.entries(controls)) {
   input.addEventListener("input", () => {
     if (id === "seed") {
-      applySeedParameters(Math.round(numberValue("seed")));
+      applySeedParameters(currentSeed());
+      syncSeedUrl();
+      seedStatus.textContent = "";
     }
     buildParticles();
   });
@@ -565,12 +601,21 @@ document.getElementById("pauseBtn").addEventListener("click", (event) => {
 
 document.getElementById("randomizeBtn").addEventListener("click", () => {
   controls.seed.value = Math.floor(Math.random() * 999999);
-  applySeedParameters(Math.round(numberValue("seed")));
+  applySeedParameters(currentSeed());
+  syncSeedUrl();
+  seedStatus.textContent = "";
   buildParticles();
 });
 
 document.getElementById("copyIosBtn").addEventListener("click", () => copyFrom("iosCode"));
 document.getElementById("copyAndroidBtn").addEventListener("click", () => copyFrom("androidCode"));
+document.getElementById("copySeedBtn").addEventListener("click", copySeedLink);
 
+const urlSeed = readSeedFromUrl();
+if (urlSeed !== null) {
+  controls.seed.value = urlSeed;
+}
+applySeedParameters(currentSeed());
+syncSeedUrl();
 buildParticles();
 requestAnimationFrame(draw);
