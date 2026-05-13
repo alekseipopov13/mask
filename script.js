@@ -209,20 +209,20 @@ function swiftCode(cfg) {
 import UIKit
 
 struct HiddenAmountParticles: View {
-    private let particles = ParticleModel.generate(
-        text: "${text}",
-        canvas: CGSize(width: ${cfg.width}, height: ${cfg.height}),
-        density: ${cfg.density.toFixed(2)},
-        radius: ${cfg.radius.toFixed(1)},
-        spread: ${cfg.spread.toFixed(1)},
-        chaos: ${cfg.chaos.toFixed(2)}
-    )
+    var particleColor: Color = .primary
 
     var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
                 let time = timeline.date.timeIntervalSinceReferenceDate * ${cfg.speed.toFixed(2)}
-                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "${cfg.backgroundColor}")))
+                let particles = ParticleModel.generate(
+                    text: "${text}",
+                    canvas: size,
+                    density: ${cfg.density.toFixed(2)},
+                    radius: ${cfg.radius.toFixed(1)},
+                    spread: ${cfg.spread.toFixed(1)},
+                    chaos: ${cfg.chaos.toFixed(2)}
+                )
                 context.addFilter(.blur(radius: ${cfg.blur.toFixed(1)}))
                 for p in particles {
                     let wave = sin(time * 2.4 + p.phase)
@@ -231,11 +231,10 @@ struct HiddenAmountParticles: View {
                     let y = p.y + sin(p.angle + wander) * ${cfg.drift.toFixed(1)} * p.orbit + wave * ${cfg.spread.toFixed(1)} * 0.12
                     let r = max(0.35, p.size * (1 + wave * ${cfg.pulse.toFixed(2)} * 0.28))
                     let rect = CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)
-                    context.fill(Path(ellipseIn: rect), with: .color(Color(hex: "${cfg.particleColor}").opacity(p.alpha)))
+                    context.fill(Path(ellipseIn: rect), with: .color(particleColor.opacity(p.alpha)))
                 }
             }
         }
-        .frame(width: ${cfg.width}, height: ${cfg.height})
     }
 }
 
@@ -329,11 +328,6 @@ struct FixedRandom {
     }
 }
 
-extension Color {
-    init(hex: String) {
-        let value = UInt64(hex.dropFirst(), radix: 16) ?? 0
-        self.init(red: Double((value >> 16) & 255) / 255, green: Double((value >> 8) & 255) / 255, blue: Double(value & 255) / 255)
-    }
 }`;
 }
 
@@ -347,17 +341,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
@@ -366,20 +355,10 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 @Composable
-fun HiddenAmountParticles(modifier: Modifier = Modifier) {
-    val density = LocalDensity.current
-    val widthPx = with(density) { ${cfg.width}.dp.toPx() }
-    val heightPx = with(density) { ${cfg.height}.dp.toPx() }
-    val particles = remember(widthPx, heightPx) {
-        ParticleModel.generate(
-            text = "${text}",
-            canvas = Size(widthPx, heightPx),
-            density = ${cfg.density.toFixed(2)}f,
-            radius = ${cfg.radius.toFixed(1)}f,
-            spread = ${cfg.spread.toFixed(1)}f,
-            chaos = ${cfg.chaos.toFixed(2)}f
-        )
-    }
+fun HiddenAmountParticles(
+    modifier: Modifier = Modifier,
+    particleColor: Color = Color.Unspecified
+) {
     val infinite = rememberInfiniteTransition(label = "hidden-amount")
     val time by infinite.animateFloat(
         initialValue = 0f,
@@ -387,8 +366,15 @@ fun HiddenAmountParticles(modifier: Modifier = Modifier) {
         animationSpec = infiniteRepeatable(tween(1_000_000, easing = LinearEasing)),
         label = "time"
     )
-    Canvas(modifier.size(${cfg.width}.dp, ${cfg.height}.dp)) {
-        drawRect(Color(${cfg.backgroundColor.replace("#", "0xFF")}))
+    Canvas(modifier) {
+        val particles = ParticleModel.generate(
+            text = "${text}",
+            canvas = size,
+            density = ${cfg.density.toFixed(2)}f,
+            radius = ${cfg.radius.toFixed(1)}f,
+            spread = ${cfg.spread.toFixed(1)}f,
+            chaos = ${cfg.chaos.toFixed(2)}f
+        )
         val t = time * ${cfg.speed.toFixed(2)}f
         particles.forEach { p ->
             val wave = sin(t * 2.4f + p.phase)
@@ -396,7 +382,7 @@ fun HiddenAmountParticles(modifier: Modifier = Modifier) {
             val x = p.x + cos(p.angle + wave) * ${cfg.drift.toFixed(1)}f * p.orbit + wander * ${cfg.spread.toFixed(1)}f * 0.12f
             val y = p.y + sin(p.angle + wander) * ${cfg.drift.toFixed(1)}f * p.orbit + wave * ${cfg.spread.toFixed(1)}f * 0.12f
             val radius = max(0.35f, p.size * (1f + wave * ${cfg.pulse.toFixed(2)}f * 0.28f))
-            drawCircle(Color(${cfg.particleColor.replace("#", "0xFF")}).copy(alpha = p.alpha), radius, Offset(x, y))
+            drawCircle(particleColor.copy(alpha = p.alpha), radius, Offset(x, y))
         }
     }
 }
