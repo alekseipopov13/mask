@@ -14,7 +14,6 @@ const controls = {
   drift: document.getElementById("drift"),
   particleColor: document.getElementById("particleColor"),
   backgroundColor: document.getElementById("backgroundColor"),
-  seed: document.getElementById("seed"),
   blur: document.getElementById("blur"),
 };
 
@@ -28,9 +27,6 @@ const outputs = {
   drift: document.getElementById("driftOut"),
 };
 
-const seedStatus = document.getElementById("seedStatus");
-const currentSeedLabel = document.getElementById("currentSeedLabel");
-
 const state = {
   particles: [],
   running: true,
@@ -40,57 +36,6 @@ const state = {
 
 function numberValue(id) {
   return Number(controls[id].value);
-}
-
-function setNumberControl(id, value, decimals = 2) {
-  controls[id].value = Number(value).toFixed(decimals);
-}
-
-function seededRange(random, min, max) {
-  return min + random() * (max - min);
-}
-
-function applySeedParameters(seed) {
-  const random = seeded(seed);
-  setNumberControl("density", seededRange(random, 0.55, 2.55), 2);
-  setNumberControl("radius", seededRange(random, 1.3, 3.2), 1);
-  setNumberControl("spread", seededRange(random, 8, 28), 1);
-  setNumberControl("chaos", seededRange(random, 0.38, 0.95), 2);
-  setNumberControl("speed", seededRange(random, 0.35, 1.35), 2);
-  setNumberControl("pulse", seededRange(random, 0.16, 0.62), 2);
-  setNumberControl("drift", seededRange(random, 3.5, 14), 1);
-  setNumberControl("blur", seededRange(random, 0.4, 2.2), 1);
-}
-
-function currentSeed() {
-  return Math.max(0, Math.round(numberValue("seed")) || 0);
-}
-
-function readSeedFromUrl() {
-  const value = new URL(window.location.href).searchParams.get("seed");
-  const seed = Number(value);
-  return Number.isFinite(seed) ? Math.max(0, Math.round(seed)) : null;
-}
-
-function seedUrl() {
-  const url = new URL(window.location.href);
-  url.searchParams.set("seed", String(currentSeed()));
-  return url.toString();
-}
-
-function syncSeedUrl() {
-  currentSeedLabel.textContent = String(currentSeed());
-  window.history.replaceState(null, "", seedUrl());
-}
-
-async function copySeedLink() {
-  const url = seedUrl();
-  try {
-    await navigator.clipboard.writeText(url);
-    seedStatus.textContent = "Ссылка с seed скопирована.";
-  } catch {
-    seedStatus.textContent = url;
-  }
 }
 
 function settings() {
@@ -107,13 +52,12 @@ function settings() {
     drift: numberValue("drift"),
     particleColor: controls.particleColor.value,
     backgroundColor: controls.backgroundColor.value,
-    seed: Math.round(numberValue("seed")),
     blur: numberValue("blur"),
   };
 }
 
-function seeded(seed) {
-  let value = seed >>> 0;
+function fixedRandom() {
+  let value = 2481;
   return () => {
     value = (value * 1664525 + 1013904223) >>> 0;
     return value / 4294967296;
@@ -148,7 +92,7 @@ function buildParticles() {
   });
 
   const image = sampleCtx.getImageData(0, 0, cfg.width, cfg.height);
-  const random = seeded(cfg.seed);
+  const random = fixedRandom();
   const step = Math.max(3, Math.round(9 / cfg.density));
   const particles = [];
   const maskBounds = { minX: cfg.width, minY: cfg.height, maxX: 0, maxY: 0 };
@@ -271,8 +215,7 @@ struct HiddenAmountParticles: View {
         density: ${cfg.density.toFixed(2)},
         radius: ${cfg.radius.toFixed(1)},
         spread: ${cfg.spread.toFixed(1)},
-        chaos: ${cfg.chaos.toFixed(2)},
-        seed: ${cfg.seed}
+        chaos: ${cfg.chaos.toFixed(2)}
     )
 
     var body: some View {
@@ -299,8 +242,9 @@ struct HiddenAmountParticles: View {
 struct ParticleModel {
     let x: Double, y: Double, phase: Double, angle: Double, orbit: Double, alpha: Double, size: Double
 
-    static func generate(text: String, canvas: CGSize, density: Double, radius: Double, spread: Double, chaos: Double, seed: UInt32) -> [ParticleModel] {
+    static func generate(text: String, canvas: CGSize, density: Double, radius: Double, spread: Double, chaos: Double) -> [ParticleModel] {
         let noiseAmount = 0.9
+        let randomBase: UInt32 = 2481
         let scale = UIScreen.main.scale
         let format = UIGraphicsImageRendererFormat()
         format.scale = scale
@@ -328,7 +272,7 @@ struct ParticleModel {
               let data = cgImage.dataProvider?.data,
               let bytes = CFDataGetBytePtr(data) else { return [] }
 
-        var rng = SeededRandom(seed: seed)
+        var rng = FixedRandom(base: randomBase)
         let width = cgImage.width
         let height = cgImage.height
         let step = max(3, Int((9 * scale / density).rounded()))
@@ -376,9 +320,9 @@ struct ParticleModel {
     }
 }
 
-struct SeededRandom {
+struct FixedRandom {
     private var value: UInt32
-    init(seed: UInt32) { value = seed }
+    init(base: UInt32) { value = base }
     mutating func next() -> Double {
         value = value &* 1_664_525 &+ 1_013_904_223
         return Double(value) / Double(UInt32.max)
@@ -433,8 +377,7 @@ fun HiddenAmountParticles(modifier: Modifier = Modifier) {
             density = ${cfg.density.toFixed(2)}f,
             radius = ${cfg.radius.toFixed(1)}f,
             spread = ${cfg.spread.toFixed(1)}f,
-            chaos = ${cfg.chaos.toFixed(2)}f,
-            seed = ${cfg.seed}
+            chaos = ${cfg.chaos.toFixed(2)}f
         )
     }
     val infinite = rememberInfiniteTransition(label = "hidden-amount")
@@ -468,8 +411,9 @@ data class ParticleModel(
     val size: Float
 ) {
     companion object {
-        fun generate(text: String, canvas: Size, density: Float, radius: Float, spread: Float, chaos: Float, seed: Int): List<ParticleModel> {
+        fun generate(text: String, canvas: Size, density: Float, radius: Float, spread: Float, chaos: Float): List<ParticleModel> {
             val noiseAmount = 0.9f
+            val randomBase = 2481
             val width = canvas.width.toInt().coerceAtLeast(1)
             val height = canvas.height.toInt().coerceAtLeast(1)
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -490,7 +434,7 @@ data class ParticleModel(
                 nativeCanvas.drawText(line, width / 2f, startY + index * lineHeight, paint)
             }
 
-            val rng = SeededRandom(seed)
+            val rng = FixedRandom(randomBase)
             val step = max(3, (9f / density).toInt())
             val result = mutableListOf<ParticleModel>()
             var minX = width.toFloat()
@@ -544,8 +488,8 @@ data class ParticleModel(
     }
 }
 
-class SeededRandom(seed: Int) {
-    private var value = seed
+class FixedRandom(base: Int) {
+    private var value = base
     fun next(): Float {
         value = value * 1_664_525 + 1_013_904_223
         return (value ushr 1).toFloat() / Int.MAX_VALUE.toFloat()
@@ -572,13 +516,8 @@ async function copyFrom(id) {
   }
 }
 
-for (const [id, input] of Object.entries(controls)) {
+for (const input of Object.values(controls)) {
   input.addEventListener("input", () => {
-    if (id === "seed") {
-      applySeedParameters(currentSeed());
-      syncSeedUrl();
-      seedStatus.textContent = "";
-    }
     buildParticles();
   });
 }
@@ -599,23 +538,8 @@ document.getElementById("pauseBtn").addEventListener("click", (event) => {
   if (state.running) requestAnimationFrame(draw);
 });
 
-document.getElementById("randomizeBtn").addEventListener("click", () => {
-  controls.seed.value = Math.floor(Math.random() * 999999);
-  applySeedParameters(currentSeed());
-  syncSeedUrl();
-  seedStatus.textContent = "";
-  buildParticles();
-});
-
 document.getElementById("copyIosBtn").addEventListener("click", () => copyFrom("iosCode"));
 document.getElementById("copyAndroidBtn").addEventListener("click", () => copyFrom("androidCode"));
-document.getElementById("copySeedBtn").addEventListener("click", copySeedLink);
 
-const urlSeed = readSeedFromUrl();
-if (urlSeed !== null) {
-  controls.seed.value = urlSeed;
-}
-applySeedParameters(currentSeed());
-syncSeedUrl();
 buildParticles();
 requestAnimationFrame(draw);

@@ -44,14 +44,16 @@ button:hover {
 
 .app {
   display: grid;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 20px;
   min-height: 100vh;
-  padding: 34px;
+  padding: 24px;
   background: var(--bg);
 }
 
 .stage {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 24px;
   justify-items: center;
   min-width: 0;
@@ -92,9 +94,9 @@ p {
 .preview-shell {
   display: grid;
   place-items: center;
-  width: min(100%, 980px);
-  min-height: 430px;
-  padding: 40px;
+  width: 100%;
+  min-height: 520px;
+  padding: 28px;
   border-radius: 28px;
   background: var(--surface);
   overflow: hidden;
@@ -103,7 +105,7 @@ p {
 canvas {
   display: block;
   max-width: 100%;
-  max-height: 430px;
+  max-height: calc(100vh - 190px);
   width: auto;
   height: auto;
   border-radius: 18px;
@@ -121,9 +123,13 @@ canvas {
 .panel {
   display: grid;
   gap: 18px;
-  width: min(100%, 980px);
-  justify-self: center;
-  padding-bottom: 34px;
+  align-content: start;
+  width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.56);
 }
 
 .tabs {
@@ -153,8 +159,7 @@ canvas {
 
 .tab-panel.active {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -214,88 +219,19 @@ textarea {
 }
 
 .grid {
-  display: contents;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+#exportTab.active {
+  grid-template-columns: 1fr;
 }
 
 .copy-status {
   min-height: 18px;
   color: var(--accent);
   font-size: 13px;
-}
-
-.field-note {
-  min-height: 16px;
-  color: var(--accent);
-  font-size: 12px;
-}
-
-.field-note.neutral {
-  color: var(--muted);
-}
-
-.field-note strong {
-  color: var(--text);
-  font-weight: 600;
-}
-
-.seed-control {
-  position: relative;
-  display: block;
-  color: inherit;
-}
-
-.seed-control input {
-  padding-right: 48px;
-}
-
-.copy-seed-button {
-  position: absolute;
-  top: 50%;
-  right: 6px;
-  display: grid;
-  width: 32px;
-  min-height: 32px;
-  place-items: center;
-  padding: 0;
-  border-radius: 999px;
-  opacity: 0;
-  transform: translateY(-50%);
-  pointer-events: none;
-  transition: opacity 120ms ease;
-}
-
-.copy-seed-button svg {
-  width: 17px;
-  height: 17px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.seed-control:hover .copy-seed-button,
-.seed-control:focus-within .copy-seed-button {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-#maskText {
-  grid-column: span 2;
-}
-
-#controlsTab > .field:first-child,
-#exportTab > .field {
-  grid-column: span 2;
-}
-
-#exportTab.active {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.export-actions,
-.copy-status {
-  grid-column: 1 / -1;
 }
 
 .code {
@@ -307,6 +243,7 @@ textarea {
 
 @media (max-width: 920px) {
   .app {
+    grid-template-columns: 1fr;
     padding: 20px;
   }
 
@@ -327,10 +264,5 @@ textarea {
   .tab-panel.active,
   #exportTab.active {
     grid-template-columns: 1fr;
-  }
-
-  #controlsTab > .field:first-child,
-  #exportTab > .field {
-    grid-column: auto;
   }
 }
