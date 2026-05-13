@@ -39,6 +39,26 @@ function numberValue(id) {
   return Number(controls[id].value);
 }
 
+function setNumberControl(id, value, decimals = 2) {
+  controls[id].value = Number(value).toFixed(decimals);
+}
+
+function seededRange(random, min, max) {
+  return min + random() * (max - min);
+}
+
+function applySeedParameters(seed) {
+  const random = seeded(seed);
+  setNumberControl("density", seededRange(random, 0.55, 2.55), 2);
+  setNumberControl("radius", seededRange(random, 1.3, 3.2), 1);
+  setNumberControl("spread", seededRange(random, 8, 28), 1);
+  setNumberControl("chaos", seededRange(random, 0.38, 0.95), 2);
+  setNumberControl("speed", seededRange(random, 0.35, 1.35), 2);
+  setNumberControl("pulse", seededRange(random, 0.16, 0.62), 2);
+  setNumberControl("drift", seededRange(random, 3.5, 14), 1);
+  setNumberControl("blur", seededRange(random, 0.4, 2.2), 1);
+}
+
 function settings() {
   return {
     text: controls.maskText.value,
@@ -518,8 +538,11 @@ async function copyFrom(id) {
   }
 }
 
-for (const input of Object.values(controls)) {
+for (const [id, input] of Object.entries(controls)) {
   input.addEventListener("input", () => {
+    if (id === "seed") {
+      applySeedParameters(Math.round(numberValue("seed")));
+    }
     buildParticles();
   });
 }
@@ -542,6 +565,7 @@ document.getElementById("pauseBtn").addEventListener("click", (event) => {
 
 document.getElementById("randomizeBtn").addEventListener("click", () => {
   controls.seed.value = Math.floor(Math.random() * 999999);
+  applySeedParameters(Math.round(numberValue("seed")));
   buildParticles();
 });
 
